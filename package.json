@@ -70,9 +70,10 @@
   },
   "dependencies": {
     "@tanbo/css-themes": "^0.0.1",
-    "@textbus/core": "^1.0.0-beta.2",
     "@textbus/components": "^1.0.0-beta.0",
+    "@textbus/core": "^1.0.0-beta.2",
     "@textbus/formatters": "^1.0.0-beta.0",
+    "@textbus/sourcecode-mode-plugin": "^1.0.0-beta.0",
     "@textbus/uikit": "^1.0.0-beta.0",
     "katex": "^0.13.0",
     "rxjs": "^6.0.0"

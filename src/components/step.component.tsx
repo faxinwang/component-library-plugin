@@ -3,9 +3,11 @@ import {
   ComponentLoader,
   FormatData,
   FormatEffect,
-  Fragment, SingleSlotRenderFn, SlotRenderFn,
+  Fragment, Interceptor, SingleSlotRenderFn, SlotRenderFn,
+  TBEvent,
   VElement,
   ViewData,
+  Injectable,
 } from '@textbus/core';
 import { BlockComponent } from '@textbus/components';
 import { boldFormatter, fontSizeFormatter } from '@textbus/formatters';
@@ -61,8 +63,35 @@ class StepComponentLoader implements ComponentLoader {
   }
 }
 
+@Injectable()
+class StepComponentInterceptor implements Interceptor<StepComponent>{
+  itemCount = 1;
+  check (evt: TBEvent<StepComponent>){
+    const instance = evt.instance;
+    setTimeout(()=>{
+      if (this.itemCount != instance.slots.length) {
+        this.itemCount = instance.slots.length;
+        instance.slots.forEach(f => f.markAsDirtied());
+      }
+    }, 16);
+  }
+  onDelete(evt:TBEvent<StepComponent>){
+   this.check(evt);
+  }
+
+  onDeleteRange (evt: TBEvent<StepComponent>){
+    this.check(evt);
+  }
+}
+
 @Component({
   loader: new StepComponentLoader(),
+  providers:[
+    { 
+      provide: Interceptor,
+      useClass: StepComponentInterceptor,
+    },
+  ],
   styles: [
     `
 tb-step {
@@ -177,7 +206,7 @@ tb-step {
 export class StepComponent extends BranchAbstractComponent {
   constructor(slots: Fragment[], private step: number) {
     super('tb-steps');
-
+    
     this.slots.push(...slots);
   }
 
@@ -234,6 +263,8 @@ export class StepComponent extends BranchAbstractComponent {
           !isOutputMode && <span class="tb-step-item-add" onClick={
             () => {
               this.slots.splice(index + 1, 0, createItem());
+              // 当前新插入的item后面的item需要更新序号
+              this.slots.forEach(i => i.markAsDirtied());
             }
           }/>
         }
